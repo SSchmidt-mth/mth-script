@@ -1,0 +1,83 @@
+#!/bin/bash
+
+#PRTG Errorcodes
+#
+#0 = OK
+#1 = Warning
+#2 = System Error
+#3 = Protocol Error
+#4 = Connten Error
+
+#Update Informationen aufrufen
+#zypper list-updates
+
+#######
+# Variablen
+
+
+wichtig_update=$(zypper list-updates  | awk '{print $5,$7,$9}' | grep 'flash-player\|MozillaFirefox' | grep -v 'flash-player-kde4\|MozillaFirefox-translations-common\|MozillaFirefox-branding-openSUSE' )
+wichtig_update_count=$(zypper list-updates  | awk '{print $5,$9}' | grep 'flash-player\|MozillaFirefox' | grep -v 'flash-player-kde4\|MozillaFirefox-translations-common\|MozillaFirefox-branding-openSUSE'|wc -l )
+
+unwichtige_update1=$(zypper list-updates  | awk '{print $5,$9}' | grep 'flash-player\|MozillaFirefox')
+unwichtige_update2=$(zypper list-updates|wc -l)
+
+wert1=$wichtig_update_count
+wert2=$wichtig_update
+wert3=($unwichtige_update2 - $unwichtige_update1)
+
+
+wert4=$(echo $wert2 |grep 'MozillaFirefox' | wc -l)
+wert5=$(echo $wert2 |grep 'flash-player' | wc -l)
+
+
+if [[ "$wert4" == "1" ]];
+then
+        version0=$(zypper list-updates  | awk '{print $5,$7,$9}' | grep 'MozillaFirefox' )
+        version1=$( echo $version0 | awk '{print $1}')
+        version2=$( echo $version0 | awk '{print $2}')
+        version3=$( echo $version0 | awk '{print $3}')
+        mozilla=$(echo $version1 Alt: $version2 Neu: $version3)
+fi
+
+if [[ "$wert5" == "1" ]];
+then
+        version0=$(zypper list-updates  | awk '{print $5,$7,$9}' | grep 'flash-player' )
+        version1=$( echo $version0 | awk '{print $1}')
+        version2=$( echo $version0 | awk '{print $2}')
+        version3=$( echo $version0 | awk '{print $3}')
+        flash=$(echo $version1 Alt: $version2 Neu: $version3)
+fi
+
+
+
+#echo "$wichtig_update_count"
+#echo "$wichtig_update"
+
+
+if [[ "$wert1" == "0" ]];
+then
+        echo "0:$wert1:keine wichtigen Updates: $wert1"
+
+else
+
+        if [[ "$wert4" == "1" ]] && [[ "$wert5" == "1" ]];
+        then
+                echo "1:$wert1:wichtige Updates: $wert1"
+                echo "( $mozilla , $flash )"
+
+        elif [[ "$wert4" == "0" ]] && [[ "$wert5" == "1" ]];
+        then
+                echo "1:$wert1:ein wichtiges Updates: $wert1"   # returncode 4 = put sensor in DOWN status
+                echo "(  $flash )"
+
+        elif [[ "$wert4" == "1" ]] && [[ "$wert5" == "0" ]];
+        then
+
+                echo "1:$wert1:ein wichtiges Updates: $wert1"   # returncode 4 = put sensor in DOWN status
+                echo "( $mozilla )"
+        fi
+
+        echo "| unwichige Updates: $wert3"
+
+fi
+
