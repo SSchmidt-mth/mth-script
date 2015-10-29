@@ -1,0 +1,83 @@
+#!/bin/bash
+
+
+#prüfen ob der prtg-Order bereits vorhanden ist 
+
+
+
+
+check1=$(ls -al /var/prtg/ 2>/dev/null | grep 'scripts' | wc -l)
+
+if [[ "$check1" == "1" ]];then
+	echo "Ordnerstruktur bereits da"
+	next1=1
+else
+	mkdir -p /var/prtg/scripts
+	check1=$(ls -al /var/prtg/ 2>/dev/null | grep 'scripts' | wc -l)
+
+	if [[ "$check1" == "1" ]];then
+		echo "Ordnerstruktur angelegt"
+		next1=1
+	else
+		echo "Ordnerstruktur anlegen fehlgeschlagen"
+	fi
+fi
+
+
+
+
+#------------------------
+#prüfen ob der update-Script bereits-vorhanden ist
+
+
+
+check2=$(ls -al /var/prtg/scripts 2>/dev/null| grep 'update-check' | wc -l )
+
+
+if [[ "$next1" == "1" ]]; then
+
+	if [[ "$check2" == "1" ]];then
+		echo "update-skript bereits vorhanden"
+		next2=1
+	else
+		cp /root/mth-script-master/mg-prtg-update/update-check /var/prtg/scripts/update-check 
+		check2=$(ls -al /var/prtg/scripts 2>/dev/null | grep 'update-check' | wc -l )
+		echo "$check2"
+		if [[ "$check2" == "1" ]];then
+			echo "Update-skript wurde verschoben"
+			next2=1
+		else
+			echo "Update-skript verschieben fehlgeschlagenn"
+		fi
+	fi
+fi
+
+#------------------------
+
+check3=$(ls -al /var/prtg/scripts/update-check 2>/dev/null| grep 'rwxr-xr-x' | wc -l )
+
+if [[ "$next2" == "1" ]]; then
+
+	if [[ "$check3" == "1" ]];then
+	        echo "Skript Berechtigung bereits vorhanden"
+		next3=1
+	else
+		chmod 755  /var/prtg/scripts/update-check
+		check3=$(ls -al /var/prtg/scripts/update-check 2>/dev/null | grep 'rwxr-xr-x' | wc -l )
+
+		if [[ "$check3" == "1" ]];then
+		 	echo "Skript wurde ausführbar gemacht"
+			next3=1
+		else
+			echo "Update-Skript ausführbar machen. fehlgeschlagen "
+		fi
+	fi
+fi
+
+
+echo "next3=$next3"
+
+
+#------------------------
+
+
